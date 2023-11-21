@@ -1,79 +1,89 @@
-// validates the input for the shuttle launch form
-// checks if the input is empty, a valid number or neither
-// returns a string indicating whether the input is empty, not a number or a number
-function validateInput(testInput) {
-    if (testInput === "") {
-        console.error("All fields are required!"); // log an error if any field is empty
-        return "Empty";
-    } else if (isNaN(testInput)) {
-        console.error("Please enter a valid number for fuel and cargo."); // log an error if fuel or cargo is not a number
-        return "Not a Number";
-    } else {
+
+
+// function to validate input fields
+function validateInput(string) {
+    if (string === ""){
+        return "Empty"
+    }
+    if (!isNaN(Number(string))) {
         return "Is a Number";
-    }
-}
-
-// form submission for the shuttle launch
-// validates input for pilot name, co-pilot name, fuel level, and cargo mass
-// updates the display with relevant info and checks if the shuttle is ready for launch
-function formSubmission(document, list, pilot, copilot, fuel, cargo) {
-    // checking validity of input values
-    const pilotStatus = validateInput(pilot);  // validate the pilot name
-    const copilotStatus = validateInput(copilot);  // validate the co-pilot name
-    const fuelStatus = validateInput(fuel);  // validate the fuel level
-    const cargoStatus = validateInput(cargo);  // validate the cargo mass
-
-    // display pilot and co-pilot names via document.getElementId
-    document.getElementById("pilotStatus").innerHTML = `Pilot ${pilot} is ready for launch`;
-    document.getElementById("copilotStatus").innerHTML = `Co-pilot ${copilot} is ready for launch`;
-
-    // updates shuttle requirements
-    const faultyItems = document.getElementById("faultyItems"); // variable that represents HTML element faultyItems
-    if (fuelStatus === "Is a Number" && cargoStatus === "Is a Number") {
-        // checks if fuel and cargo are valid numbers
-        if (fuel < 10000) {
-            // if fuel is less than 10,000, display an error
-            faultyItems.style.visibility = "visible";
-            document.getElementById("fuelStatus").innerHTML = "Fuel level too low for launch";
-            document.getElementById("launchStatus").style.color = "red";
-            document.getElementById("launchStatus").innerHTML = "Shuttle Not Ready for Launch";
-        } else if (cargo > 10000) {
-            // if cargo is more than 10,000, display an error
-            faultyItems.style.visibility = "visible";
-            document.getElementById("cargoStatus").innerHTML = "Cargo mass too heavy for launch";
-            document.getElementById("launchStatus").style.color = "red";
-            document.getElementById("launchStatus").innerHTML = "Shuttle Not Ready for Launch";
-        } else {
-            // if all conditions are met, the shuttle is ready for launch
-            faultyItems.style.visibility = "hidden";
-            document.getElementById("launchStatus").style.color = "green";
-            document.getElementById("launchStatus").innerHTML = "Shuttle is Ready for Launch";
-        }
     } else {
-        // log an error if fuel or cargo is not a valid number
-        console.error("Please enter valid numbers for fuel and cargo.");
+        return "Not a Number";
+    //checks for empty fields (=== empty string)
+//returns a string indicating that the input has empty fields
+//checks for non-numeric values for fuel and cargo
+//returns a string indicating that input is valid (a numeric value)
     }
 }
 
+// function that handles form submission and updates status
+function formSubmission(document, list, pilot, copilot, fuelLevel, cargoLevel) {
+    //gets specified elements from the document
+    const items = document.getElementById("faultyItems");
+    const status = document.getElementById("launchStatus");
+    const pilotStatus = document.getElementById("pilotStatus");
+    const copilotStatus = document.getElementById("copilotStatus");
+    const fuelStatus = document.getElementById("fuelStatus");
+    const cargoStatus = document.getElementById("cargoStatus");
 
-// fetches a list of planets from an external API (application programming interface)
-// returns a promise with the JSON response
-function myFetch() {
-    // the fetch function makes an HTTP request to the specified URL
-    // this returns a Promise that resolves to the Response to that request
-    return fetch("https://handlers.education.launchcode.org/static/planets.json")
-        .then(response => response.json()) // when the response is received, parses it as JSON
-        .catch(error => console.error(error)); // logs an error if the fetch fails
+    //updates pilot and copilot status
+    pilotStatus.innerHTML = `Pilot ${pilot} is ready for launch`;
+    copilotStatus.innerHTML = `Co-pilot ${copilot} is ready for launch`;
+    // checks fuel level and updates status and visibility accordingly
+    if (fuelLevel < 10000) {
+        items.style.visibility = "visible";
+        fuelStatus.innerHTML = "Fuel level too low for launch";
+        status.innerHTML = "Shuttle Not Ready for Launch";
+        status.style.color = "red";
+    } else {
+        fuelStatus.innerHTML = "Fuel level high enough for launch";
+    }
+    // checks cargo mass and updates status and visibility accordingly
+    if (cargoLevel > 10000) {
+        items.style.visibility = "visible";
+        cargoStatus.innerHTML = "Cargo mass too heavy for launch";
+        status.innerHTML = "Shuttle Not Ready for Launch";
+        status.style.color = "red";
+        
+    } else {
+        cargoStatus.innerHTML = "Cargo mass low enough for launch";
+    }
+    // if both fuel and cargo are within limits, updates status to 'ready for launch'
+    if (cargoLevel <= 10000 && fuelLevel >= 10000) {
+        status.style.color = "green";
+        status.innerHTML = "Shuttle is Ready for Launch";
+       // items.style.visibility = "visible";
+       // fuelStatus.innerHTML = "Fuel level high enough for launch";
+        //cargoStatus.innerHTML = "Cargo mass low enough for launch";
+    }
 }
+    
+//async function that fetches a list of planets from remote JSON file
+// uses the fetch API to make a network request to the specified URL
+//if the function returns a value, the Promise will be resolved with that value
+async function myFetch() {
+    let planetsReturned;
+//keyword "await" pauses the execution of the function until the Promise is resolved
+    planetsReturned = await fetch("https://handlers.education.launchcode.org/static/planets.json").then(function (response) {
+        if (response.status >= 400) {
+    //checks if the response status is 400 or higher (indicating an error) and throws an error if true
+            throw new Error("bad response");
+        } else {
+            return response.json()
+    //if response is successful, parses the JSON content and returns the list of planets
+        }
+    });
 
-
-// function pickPlanet takes in planets array as an argument
+    return planetsReturned;
+}
+//function pickPlanet takes in planets array as an argument
 function pickPlanet(planets) {
-    const index = Math.floor(Math.random() * planets.length);
-    //math.random will run through the length of planets array
+    let index = Math.floor(Math.random() * planets.length);
+     //math.random will run through the length of planets array
     //math.floor rounds down the result to the nearest integer
     return planets[index];
 }
+
 
 // adding information about the mission destination to the HTML
 // Updates the missionTarget element with details about the selected planet
@@ -91,7 +101,7 @@ function addDestinationInfo(document, name, diameter, star, distance, moons, ima
             <li>Distance from Earth: ${distance}</li>
             <li>Number of Moons: ${moons}</li>
         </ol>
-        <img src="${image}" alt="Mission Destination Image">
+        <img src="${image}">
     `; //${} are placeholders that will be replaced with the actual values of the corresponding parameters
 }
 
@@ -104,11 +114,6 @@ module.exports = {
     pickPlanet,
     myFetch
 };
-
-
-
-
-
 // module.exports.addDestinationInfo = addDestinationInfo;
 // module.exports.validateInput = validateInput;
 // module.exports.formSubmission = formSubmission;

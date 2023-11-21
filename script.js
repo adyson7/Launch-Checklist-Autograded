@@ -1,63 +1,42 @@
-// this page sets up event listeners and async functions to handle...
-//..the window load event and form submission event for shuttle launch checklist
-
-// window "load" event listener - function will execute when window finishes loading
 window.addEventListener("load", function () {
+//variables to store the listed planets and the response from the myFetch function
     let listedPlanets;
-  
-    // fetches planetary data
     let listedPlanetsResponse = myFetch();
-  // myFetch function returns a Promise, `then` function handles result
+    
+    //handles the response from the myFetch function
     listedPlanetsResponse.then(function (result) {
-      listedPlanets = result;
-      console.log(listedPlanets);
-  
-      // calls helper functions to pick a planet from the 
-      //list of planets and adds that information to your destination.
-      const selectedPlanet = pickPlanet(listedPlanets);
-      addDestinationInfo(
-        document,
-        selectedPlanet.name,
-        selectedPlanet.diameter,
-        selectedPlanet.star,
-        selectedPlanet.distance,
-        selectedPlanet.moons,
-        selectedPlanet.image
-      );
-    });
-  
-    // Form submission event
-    const form = document.querySelector("form");
+        listedPlanets = result;
+        console.log(listedPlanets); //logs listed planets to the console
+    }).then(function () {
+ //after fetching the planets, selects a random planet and adds it's info to the HTML
+        let selectPlanet = pickPlanet(listedPlanets);
+        addDestinationInfo(document, selectPlanet.name, selectPlanet.diameter, selectPlanet.star, selectPlanet.distance, selectPlanet.moons, selectPlanet.image);
+    })
+//hides the faulty items list initially
+    let list = document.getElementById("faultyItems");
+    list.style.visibility = "hidden";
+//event listener for the form submission
+    let form = document.querySelector("form");
     form.addEventListener("submit", function (event) {
-      event.preventDefault();
-  
-      //get form values
-      const pilotInput = document.querySelector("input[name=pilotName]");
-      const copilotInput = document.querySelector("input[name=copilotName]");
-      const fuelInput = document.querySelector("input[name=fuelLevel]");
-      const cargoInput = document.querySelector("input[name=cargoMass]");
-  
-      // Form submission
-      formSubmission(
-        document,
-        document.getElementById("faultyItems"),
-        pilotInput.value,
-        copilotInput.value,
-        fuelInput.value,
-        cargoInput.value
-      );
-  
-      // Additional code using the original provided functions
-      const launchStatus = document.getElementById("launchStatus");
-      const list = document.getElementById("faultyItems");
-      const fuelInput = document.querySelector("input[name=fuelLevel]");
-      const cargoInput = document.querySelector("input[name=cargoMass]");
-  
-      // Example usage of updateLaunchStatus function
-      updateLaunchStatus(document, list, fuelInput.value, cargoInput.value);
-  
-    });
-  });
+        event.preventDefault(); //prevents the default form submission behavior when values are extracted from the form
+
+
+    //validates input and get values from the form
+        validateInput(document);
+        let pilotInput = document.querySelector("input[name=pilotName]");
+        let pilot = pilotInput.value;
+        let copilotInput = document.querySelector("input[name=copilotName]");
+        let copilot = copilotInput.value;
+        let fuelInput = document.querySelector("input[name=fuelLevel]");
+        let fuelLevel = Number(fuelInput.value);
+        let cargoInput = document.querySelector("input[name=cargoMass]");
+        let cargoLevel = Number(cargoInput.value);
+
+        formSubmission(document, list, pilot, copilot, fuelLevel, cargoLevel);
+    //submits the form on the page with the extracted values
+    })
+});
+
   
 
 
